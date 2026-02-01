@@ -42,18 +42,36 @@ RUN pnpm ui:install && pnpm ui:build
 FROM node:22-bookworm
 ENV NODE_ENV=production
 
+# Install base packages
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
-    default-jre-headless \
+    wget \
   && rm -rf /var/lib/apt/lists/*
 
+# Install Eclipse Temurin JRE 21 (signal-cli requires Java 21+)
+ARG JAVA_VERSION=21.0.2+13
+RUN echo "Installing Temurin JRE 21..." \
+  && wget -q "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.2%2B13/OpenJDK21U-jre_x64_linux_hotspot_21.0.2_13.tar.gz" -O /tmp/jre.tar.gz \
+  && mkdir -p /opt/java \
+  && tar xf /tmp/jre.tar.gz -C /opt/java --strip-components=1 \
+  && rm /tmp/jre.tar.gz \
+  && ln -s /opt/java/bin/java /usr/local/bin/java
+ENV JAVA_HOME=/opt/java
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+
 # Install signal-cli for Signal channel support
-ARG SIGNAL_CLI_VERSION=0.13.4
-RUN wget -q "https://github.com/AsamK/signal-cli/releases/download/v${SIGNAL_CLI_VERSION}/signal-cli-${SIGNAL_CLI_VERSION}-Linux.tar.gz" \
-  && tar xf "signal-cli-${SIGNAL_CLI_VERSION}-Linux.tar.gz" -C /opt \
-  && ln -s "/opt/signal-cli-${SIGNAL_CLI_VERSION}/bin/signal-cli" /usr/local/bin/signal-cli \
-  && rm "signal-cli-${SIGNAL_CLI_VERSION}-Linux.tar.gz"
+ARG SIGNAL_CLI_VERSION=0.13.23
+RUN echo "Downloading signal-cli v${SIGNAL_CLI_VERSION}..." \
+  && wget -q "https://github.com/AsamK/signal-cli/releases/download/v${SIGNAL_CLI_VERSION}/signal-cli-${SIGNAL_CLI_VERSION}.tar.gz"
+RUN echo "Extracting signal-cli..." \
+  && tar xf "signal-cli-${SIGNAL_CLI_VERSION}.tar.gz" -C /opt
+RUN echo "Creating symlink..." \
+  && ln -s "/opt/signal-cli-${SIGNAL_CLI_VERSION}/bin/signal-cli" /usr/local/bin/signal-cli
+RUN echo "Cleaning up..." \
+  && rm "signal-cli-${SIGNAL_CLI_VERSION}.tar.gz"
+RUN echo "Verifying signal-cli installation..." \
+  && signal-cli --version
 
 WORKDIR /app
 
