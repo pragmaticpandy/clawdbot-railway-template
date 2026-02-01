@@ -46,6 +46,7 @@ RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
     default-jre-headless \
+    wget \
   && rm -rf /var/lib/apt/lists/*
 
 # Install signal-cli for Signal channel support
