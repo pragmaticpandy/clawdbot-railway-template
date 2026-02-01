@@ -42,12 +42,14 @@ RUN pnpm ui:install && pnpm ui:build
 FROM node:22-bookworm
 ENV NODE_ENV=production
 
-# Cache bust: added wget + jre for signal-cli support
-RUN apt-get update \
+# signal-cli requires Java 21+, install from bookworm-backports
+RUN echo "deb http://deb.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/backports.list \
+  && apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
-    default-jre-headless \
     wget \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends -t bookworm-backports \
+    openjdk-21-jre-headless \
   && rm -rf /var/lib/apt/lists/*
 
 # Install signal-cli for Signal channel support
