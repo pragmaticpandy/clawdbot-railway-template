@@ -45,7 +45,15 @@ ENV NODE_ENV=production
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
+    default-jre-headless \
   && rm -rf /var/lib/apt/lists/*
+
+# Install signal-cli for Signal channel support
+ARG SIGNAL_CLI_VERSION=0.13.4
+RUN wget -q "https://github.com/AsamK/signal-cli/releases/download/v${SIGNAL_CLI_VERSION}/signal-cli-${SIGNAL_CLI_VERSION}-Linux.tar.gz" \
+  && tar xf "signal-cli-${SIGNAL_CLI_VERSION}-Linux.tar.gz" -C /opt \
+  && ln -s "/opt/signal-cli-${SIGNAL_CLI_VERSION}/bin/signal-cli" /usr/local/bin/signal-cli \
+  && rm "signal-cli-${SIGNAL_CLI_VERSION}-Linux.tar.gz"
 
 WORKDIR /app
 
