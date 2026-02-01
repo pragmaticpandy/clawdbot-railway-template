@@ -42,15 +42,23 @@ RUN pnpm ui:install && pnpm ui:build
 FROM node:22-bookworm
 ENV NODE_ENV=production
 
-# signal-cli requires Java 21+, install from bookworm-backports
-RUN echo "deb http://deb.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/backports.list \
-  && apt-get update \
+# Install base packages
+RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
     wget \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends -t bookworm-backports \
-    openjdk-21-jre-headless \
   && rm -rf /var/lib/apt/lists/*
+
+# Install Eclipse Temurin JRE 21 (signal-cli requires Java 21+)
+ARG JAVA_VERSION=21.0.2+13
+RUN echo "Installing Temurin JRE 21..." \
+  && wget -q "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.2%2B13/OpenJDK21U-jre_x64_linux_hotspot_21.0.2_13.tar.gz" -O /tmp/jre.tar.gz \
+  && mkdir -p /opt/java \
+  && tar xf /tmp/jre.tar.gz -C /opt/java --strip-components=1 \
+  && rm /tmp/jre.tar.gz \
+  && ln -s /opt/java/bin/java /usr/local/bin/java
+ENV JAVA_HOME=/opt/java
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # Install signal-cli for Signal channel support
 ARG SIGNAL_CLI_VERSION=0.13.23
