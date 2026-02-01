@@ -51,15 +51,15 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 # Install signal-cli for Signal channel support
-ARG SIGNAL_CLI_VERSION=0.13.4
+ARG SIGNAL_CLI_VERSION=0.13.23
 RUN echo "Downloading signal-cli v${SIGNAL_CLI_VERSION}..." \
-  && wget -q "https://github.com/AsamK/signal-cli/releases/download/v${SIGNAL_CLI_VERSION}/signal-cli-${SIGNAL_CLI_VERSION}-Linux.tar.gz"
+  && wget -q "https://github.com/AsamK/signal-cli/releases/download/v${SIGNAL_CLI_VERSION}/signal-cli-${SIGNAL_CLI_VERSION}.tar.gz"
 RUN echo "Extracting signal-cli..." \
-  && tar xf "signal-cli-${SIGNAL_CLI_VERSION}-Linux.tar.gz" -C /opt
+  && tar xf "signal-cli-${SIGNAL_CLI_VERSION}.tar.gz" -C /opt
 RUN echo "Creating symlink..." \
   && ln -s "/opt/signal-cli-${SIGNAL_CLI_VERSION}/bin/signal-cli" /usr/local/bin/signal-cli
 RUN echo "Cleaning up..." \
-  && rm "signal-cli-${SIGNAL_CLI_VERSION}-Linux.tar.gz"
+  && rm "signal-cli-${SIGNAL_CLI_VERSION}.tar.gz"
 RUN echo "Verifying signal-cli installation..." \
   && signal-cli --version
 
