@@ -47,6 +47,7 @@ RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
     wget \
+    chromium \
   && rm -rf /var/lib/apt/lists/*
 
 # Install Eclipse Temurin JRE 21 (signal-cli requires Java 21+)
