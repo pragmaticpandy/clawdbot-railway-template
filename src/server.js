@@ -8,6 +8,9 @@ import express from "express";
 import httpProxy from "http-proxy";
 import * as tar from "tar";
 
+// Chromium startup for browser automation (attachOnly mode)
+import { startChromium, stopChromium } from "./chromium-startup.js";
+
 // Railway deployments sometimes inject PORT=3000 by default. We want the wrapper to
 // reliably listen on 8080 unless explicitly overridden.
 //
@@ -128,6 +131,10 @@ async function startGateway() {
 
   fs.mkdirSync(STATE_DIR, { recursive: true });
   fs.mkdirSync(WORKSPACE_DIR, { recursive: true });
+
+  // Start chromium for browser automation (browser.attachOnly mode)
+  const chromiumResult = await startChromium();
+  console.log(`[gateway] chromium startup: ${chromiumResult.ok ? 'ok' : chromiumResult.reason || 'failed'}`);
 
   const args = [
     "gateway",
@@ -989,6 +996,7 @@ process.on("SIGTERM", () => {
   // Best-effort shutdown
   try {
     if (gatewayProc) gatewayProc.kill("SIGTERM");
+    stopChromium();
   } catch {
     // ignore
   }
