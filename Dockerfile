@@ -47,6 +47,8 @@ RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
     wget \
+    # Tini init for proper zombie reaping (required for Chrome in containers)
+    tini \
     # Chromium browser
     chromium \
     # Required libraries for headless Chrome
@@ -118,4 +120,7 @@ COPY src ./src
 ENV OPENCLAW_PUBLIC_PORT=8080
 ENV PORT=8080
 EXPOSE 8080
+
+# Use tini as init to properly reap zombie processes (required for Chrome)
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["node", "src/server.js"]
