@@ -48,6 +48,7 @@ RUN apt-get update \
     ca-certificates \
     wget \
     chromium \
+    poppler-utils \
   && rm -rf /var/lib/apt/lists/*
 
 # Install Eclipse Temurin JRE 21 (signal-cli requires Java 21+)
