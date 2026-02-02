@@ -73,7 +73,7 @@ RUN apt-get update \
 
 # Set Chromium path for Playwright/OpenClaw
 ENV CHROME_PATH=/usr/bin/chromium
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
 
 # Install Eclipse Temurin JRE 21 (signal-cli requires Java 21+)
 ARG JAVA_VERSION=21.0.2+13
