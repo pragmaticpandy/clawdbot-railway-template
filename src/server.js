@@ -545,6 +545,9 @@ app.post("/setup/api/run", requireSetupAuth, async (req, res) => {
     await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "gateway.bind", "loopback"]));
     await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "gateway.port", String(INTERNAL_GATEWAY_PORT)]));
 
+    // Enable browser automation with attachOnly mode (chromium is pre-started by the wrapper)
+    await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "browser.attachOnly", "true"]));
+
     const channelsHelp = await runCmd(OPENCLAW_NODE, clawArgs(["channels", "add", "--help"]));
     const helpText = channelsHelp.output || "";
 
