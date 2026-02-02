@@ -48,6 +48,7 @@ RUN apt-get update \
     ca-certificates \
     wget \
     chromium \
+    ffmpeg \
     poppler-utils \
   && rm -rf /var/lib/apt/lists/*
 
