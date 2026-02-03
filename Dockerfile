@@ -46,11 +46,16 @@ ENV NODE_ENV=production
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
+    curl \
     wget \
     chromium \
     ffmpeg \
     poppler-utils \
   && rm -rf /var/lib/apt/lists/*
+
+# Install uv (fast Python package manager, provides uvx for running Python CLI tools)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:${PATH}"
 
 # Install Eclipse Temurin JRE 21 (signal-cli requires Java 21+)
 ARG JAVA_VERSION=21.0.2+13
