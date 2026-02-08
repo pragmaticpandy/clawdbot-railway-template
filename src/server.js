@@ -226,7 +226,11 @@ app.disable("x-powered-by");
 app.use(express.json({ limit: "1mb" }));
 
 // Minimal health endpoint for Railway.
-app.get("/setup/healthz", (_req, res) => res.json({ ok: true }));
+app.get("/setup/healthz", (_req, res) => {
+  if (!isConfigured()) return res.json({ ok: true, gateway: "unconfigured" });
+  const running = !!gatewayProc;
+  res.status(running ? 200 : 503).json({ ok: running, gateway: running ? "running" : "starting" });
+});
 
 app.get("/setup/app.js", requireSetupAuth, (_req, res) => {
   // Serve JS for /setup (kept external to avoid inline encoding/template issues)
@@ -968,7 +972,16 @@ const server = app.listen(PORT, "0.0.0.0", () => {
   if (!SETUP_PASSWORD) {
     console.warn("[wrapper] WARNING: SETUP_PASSWORD is not set; /setup will error.");
   }
-  // Don't start gateway unless configured; proxy will ensure it starts.
+  // Auto-start gateway on boot if already configured.
+  // Without this, channels (Signal, Telegram, etc.) don't connect until
+  // the first HTTP request hits the wrapper — which may never happen
+  // without manual intervention (e.g. opening the Control UI).
+  if (isConfigured()) {
+    console.log("[wrapper] config found — auto-starting gateway");
+    ensureGatewayRunning().catch((err) => {
+      console.error(`[wrapper] auto-start failed: ${String(err)}`);
+    });
+  }
 });
 
 server.on("upgrade", async (req, socket, head) => {
