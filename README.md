@@ -36,7 +36,10 @@ Optional:
 - `OPENCLAW_GATEWAY_TOKEN` — if not set, the wrapper generates one (not ideal). In a template, set it using a generated secret.
 
 Notes:
-- This template pins OpenClaw to a known-good version by default via Docker build arg `OPENCLAW_GIT_REF`.
+- This template pins OpenClaw to a known-good version by default via Docker build args:
+  - `OPENCLAW_GIT_REPO` — Git URL to clone (default: `https://github.com/openclaw/openclaw.git`). Set to a fork URL to deploy a custom version.
+  - `OPENCLAW_GIT_TOKEN` — GitHub Personal Access Token with `repo` scope (only needed for private repos). Injected into the clone URL at build time. Safe in multi-stage builds since the token only exists in the build stage.
+  - `OPENCLAW_GIT_REF` — Branch or tag to check out (default: `main`).
 
 4) Enable **Public Networking** (HTTP). Railway will assign a domain.
 5) Deploy.

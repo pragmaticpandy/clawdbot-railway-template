@@ -20,9 +20,17 @@ RUN corepack enable
 
 WORKDIR /openclaw
 
-# Pin to a known ref (tag/branch). If it doesn't exist, fall back to main.
+# Pin to a known ref (tag/branch) and repo. Defaults to upstream main.
+# For private repos, set OPENCLAW_GIT_TOKEN to a GitHub PAT with repo scope.
+ARG OPENCLAW_GIT_REPO=https://github.com/openclaw/openclaw.git
+ARG OPENCLAW_GIT_TOKEN=
 ARG OPENCLAW_GIT_REF=main
-RUN git clone --depth 1 --branch "${OPENCLAW_GIT_REF}" https://github.com/openclaw/openclaw.git .
+RUN if [ -n "${OPENCLAW_GIT_TOKEN}" ]; then \
+      REPO_URL=$(echo "${OPENCLAW_GIT_REPO}" | sed "s|https://|https://${OPENCLAW_GIT_TOKEN}@|"); \
+    else \
+      REPO_URL="${OPENCLAW_GIT_REPO}"; \
+    fi && \
+    git clone --depth 1 --branch "${OPENCLAW_GIT_REF}" "${REPO_URL}" .
 
 # Patch: relax version requirements for packages that may reference unpublished versions.
 # Apply to all extension package.json files to handle workspace protocol (workspace:*).
