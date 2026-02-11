@@ -95,12 +95,10 @@ let gatewayProc = null;
 let gatewayStarting = null;
 
 // --- Syncthing sidecar ---
-const SYNCTHING_CONFIG_DIR = path.join(
-  process.env.SYNCTHING_CONFIG_DIR?.trim() || path.join(STATE_DIR, "syncthing", "config"),
-);
-const SYNCTHING_DATA_DIR = path.join(
-  process.env.SYNCTHING_DATA_DIR?.trim() || path.join(STATE_DIR, "syncthing", "data"),
-);
+const SYNCTHING_CONFIG_DIR =
+  process.env.SYNCTHING_CONFIG_DIR?.trim() || path.join(STATE_DIR, "syncthing", "config");
+const SYNCTHING_DATA_DIR =
+  process.env.SYNCTHING_DATA_DIR?.trim() || path.join(STATE_DIR, "syncthing", "data");
 const SYNCTHING_ENABLED = (process.env.SYNCTHING_ENABLED ?? "true").trim().toLowerCase() !== "false";
 
 let syncthingProc = null;
