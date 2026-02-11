@@ -55,9 +55,21 @@ RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
     wget \
+    curl \
     chromium \
     ffmpeg \
     poppler-utils \
+  && rm -rf /var/lib/apt/lists/*
+
+# Install Syncthing from official apt repo (https://apt.syncthing.net/)
+RUN mkdir -p /etc/apt/keyrings \
+  && curl -L -o /etc/apt/keyrings/syncthing-archive-keyring.gpg https://syncthing.net/release-key.gpg \
+  && echo "deb [signed-by=/etc/apt/keyrings/syncthing-archive-keyring.gpg] https://apt.syncthing.net/ syncthing stable-v2" \
+     > /etc/apt/sources.list.d/syncthing.list \
+  && printf "Package: *\nPin: origin apt.syncthing.net\nPin-Priority: 990\n" \
+     > /etc/apt/preferences.d/syncthing.pref \
+  && apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends syncthing \
   && rm -rf /var/lib/apt/lists/*
 
 # Install Eclipse Temurin JRE 21 (signal-cli requires Java 21+)

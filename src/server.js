@@ -94,6 +94,46 @@ function isConfigured() {
 let gatewayProc = null;
 let gatewayStarting = null;
 
+// --- Syncthing sidecar ---
+const SYNCTHING_CONFIG_DIR =
+  process.env.SYNCTHING_CONFIG_DIR?.trim() || path.join(STATE_DIR, "syncthing", "config");
+const SYNCTHING_DATA_DIR =
+  process.env.SYNCTHING_DATA_DIR?.trim() || path.join(STATE_DIR, "syncthing", "data");
+const SYNCTHING_ENABLED = (process.env.SYNCTHING_ENABLED ?? "true").trim().toLowerCase() !== "false";
+
+let syncthingProc = null;
+
+function startSyncthing() {
+  if (!SYNCTHING_ENABLED) return;
+  if (syncthingProc) return;
+
+  fs.mkdirSync(SYNCTHING_CONFIG_DIR, { recursive: true });
+  fs.mkdirSync(SYNCTHING_DATA_DIR, { recursive: true });
+
+  const args = [
+    "serve",
+    `--config=${SYNCTHING_CONFIG_DIR}`,
+    `--data=${SYNCTHING_DATA_DIR}`,
+    "--no-browser",
+    "--gui-address=0.0.0.0:8384",
+  ];
+
+  console.log(`[syncthing] starting: syncthing ${args.join(" ")}`);
+  syncthingProc = childProcess.spawn("syncthing", args, {
+    stdio: "inherit",
+  });
+
+  syncthingProc.on("error", (err) => {
+    console.error(`[syncthing] spawn error: ${String(err)}`);
+    syncthingProc = null;
+  });
+
+  syncthingProc.on("exit", (code, signal) => {
+    console.error(`[syncthing] exited code=${code} signal=${signal}`);
+    syncthingProc = null;
+  });
+}
+
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -982,6 +1022,9 @@ const server = app.listen(PORT, "0.0.0.0", () => {
       console.error(`[wrapper] auto-start failed: ${String(err)}`);
     });
   }
+
+  // Start Syncthing sidecar (independent of gateway config).
+  startSyncthing();
 });
 
 server.on("upgrade", async (req, socket, head) => {
@@ -1002,6 +1045,11 @@ process.on("SIGTERM", () => {
   // Best-effort shutdown
   try {
     if (gatewayProc) gatewayProc.kill("SIGTERM");
+  } catch {
+    // ignore
+  }
+  try {
+    if (syncthingProc) syncthingProc.kill("SIGTERM");
   } catch {
     // ignore
   }
